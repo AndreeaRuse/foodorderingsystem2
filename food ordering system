@@ -1,0 +1,242 @@
+# QuickBite Food Ordering System
+
+# Initialize the menu with items and their prices
+menu = [
+    {"name": "Smash Burger", "price": 5.99},
+    {"name": "Chicken Burger", "price": 6.99},
+    {"name": "Cheeseburger", "price": 2.99},
+    {"name": "Big Daddy Burger", "price": 7.50},
+    {"name": "Chicken Loaded Fries", "price": 3.50},
+    {"name": "Simple Fries", "price": 1.99},
+    {"name": "BBQ Wings", "price": 3.99},
+    {"name": "Spicy Wings", "price": 3.99},
+    {"name": "Plain Wings", "price": 2.99},
+    {"name": "Margherita Pizza", "price": 8.99},
+    {"name": "All Meat Pizza", "price": 8.99},
+    {"name": "Hawaiian Pizza", "price": 7.99},
+    {"name": "Romanian Pizza", "price": 8.99},
+    {"name": "Pepperoni Pizza", "price": 8.99},
+    {"name": "Spicy Pizza", "price": 7.99},
+    {"name": "Greek Salad", "price": 4.99},
+    {"name": "Pasta Alforno", "price": 7.99},
+    {"name": "Chocolate Ice Cream", "price": 1.99},
+    {"name": "Vanilla Ice Cream", "price": 1.99},
+    {"name": "Strawberry Ice Cream", "price": 1.99},
+]
+
+order = []
+
+
+# Function to display the menu
+def display_menu():
+    print("\n--- QuickBite Menu ---")
+    print("{:<20} {:>10}".format("Item", "Price"))
+    print("-" * 30)
+    for item in menu:
+        print(f"{item['name']:<20} ${item['price']:.2f}")
+    print("-" * 30)
+
+
+# Function to find a menu item by name
+def find_menu_item(name):
+    """Find and return a menu item by name (case-insensitive)."""
+    for item in menu:
+        if item["name"].lower() == name.lower():
+            return item
+    return None
+
+
+# Function to add an item to the order with quantity
+def add_to_order():
+    """Add an item to the order based on user input for item name and quantity."""
+    while True:
+        display_menu()
+        item_name = input("\nEnter the name of the item to order (or 'done' to finish): ").strip()
+        if item_name.lower() == 'done':
+            break
+        item = find_menu_item(item_name)
+        if item:
+            # Input quantity with validation
+            while True:
+                quantity = input(f"Enter quantity for {item['name']}: ").strip()
+                if quantity.isdigit() and int(quantity) > 0:
+                    order.append({"name": item["name"], "price": item["price"], "quantity": int(quantity)})
+                    print(f"Added {quantity} x {item['name']} to your order.")
+                    break
+                else:
+                    print("Invalid quantity. Please enter a positive number.")
+        else:
+            print("Item not found. Please enter a valid item name from the menu.")
+
+
+# Function to remove an item from the order by name
+def remove_from_order():
+    """Remove an item from the order by name."""
+    view_order_summary()
+    if order:
+        while True:
+            item_name = input("\nEnter the name of the item to remove (or 'done' to finish): ").strip()
+            if item_name.lower() == 'done':
+                break
+            for i, order_item in enumerate(order):
+                if order_item["name"].lower() == item_name.lower():
+                    print(f"Removed {order_item['quantity']} x {order_item['name']} from your order.")
+                    order.pop(i)
+                    break
+            else:
+                print("Item not found in your order. Please enter a valid item name.")
+
+
+# Function to edit the quantity of an item in the order
+def edit_order_quantity():
+    """Edit the quantity of an item already in the order."""
+    view_order_summary()
+    if order:
+        item_name = input("Enter the name of the item to edit quantity: ").strip()
+        for order_item in order:
+            if order_item["name"].lower() == item_name.lower():
+                new_quantity = input(f"Enter new quantity for {order_item['name']}: ").strip()
+                if new_quantity.isdigit() and int(new_quantity) > 0:
+                    order_item["quantity"] = int(new_quantity)
+                    print(f"Updated {order_item['name']} quantity to {new_quantity}.")
+                    return
+                else:
+                    print("Invalid quantity. Please enter a positive number.")
+                    return
+        print("Item not found in your order.")
+    else:
+        print("Your order is empty.")
+
+
+# Function to clear the entire order
+def clear_order():
+    """Clear all items from the order."""
+    global order
+    if order:
+        confirm = input("Are you sure you want to clear the entire order? (yes/no): ").strip().lower()
+        if confirm == 'yes':
+            order = []
+            print("Your order has been cleared.")
+    else:
+        print("Your order is already empty.")
+
+
+# Function to search the menu by keyword
+def search_menu():
+    """Search the menu based on a keyword."""
+    keyword = input("Enter a keyword to search the menu: ").strip().lower()
+    results = [item for item in menu if keyword in item["name"].lower()]
+    if results:
+        print("\nSearch Results:")
+        for item in results:
+            print(f"{item['name']} - ${item['price']:.2f}")
+    else:
+        print("No items found matching that keyword.")
+
+
+# Function to calculate the total cost including tax
+def calculate_total():
+    """Calculate and display the total cost including tax."""
+    TAX_RATE = 0.08
+    total = sum(item['price'] * item['quantity'] for item in order)
+    tax = total * TAX_RATE
+    grand_total = total + tax
+    print(f"\nSubtotal: ${total:.2f}")
+    print(f"Tax (8%): ${tax:.2f}")
+    print(f"Total: ${grand_total:.2f}")
+    return grand_total
+
+
+# Function to view current order summary
+def view_order_summary():
+    """Display a summary of the current order."""
+    if not order:
+        print("Your order is empty.")
+    else:
+        print("\nCurrent Order Summary:")
+        print("{:<20} {:>10} {:>10} {:>10}".format("Item", "Quantity", "Unit Price", "Total Price"))
+        print("-" * 50)
+        for item in order:
+            print(
+                f"{item['name']:<20} {item['quantity']:>10} ${item['price']:<10.2f} ${item['price'] * item['quantity']:.2f}")
+        print("-" * 50)
+
+
+# Function to generate and save a detailed receipt
+def generate_receipt():
+    """Generate a detailed receipt and save it to a text file."""
+    grand_total = calculate_total()
+    print("\n--- QuickBite Receipt ---")
+    print("{:<20} {:>10} {:>10} {:>10}".format("Item", "Quantity", "Unit Price", "Total Price"))
+    print("-" * 50)
+    for item in order:
+        print(
+            f"{item['name']:<20} {item['quantity']:>10} ${item['price']:<10.2f} ${item['price'] * item['quantity']:.2f}")
+    print("-" * 50)
+    print(f"Grand Total: ${grand_total:.2f}")
+    print("\nThank you for dining with QuickBite!")
+
+    # Save receipt to a file
+    with open("QuickBite_Receipt.txt", "w") as file:
+        file.write("--- QuickBite Receipt ---\n")
+        file.write("{:<20} {:>10} {:>10} {:>10}\n".format("Item", "Quantity", "Unit Price", "Total Price"))
+        file.write("-" * 50 + "\n")
+        for item in order:
+            file.write(
+                f"{item['name']:<20} {item['quantity']:>10} ${item['price']:<10.2f} ${item['price'] * item['quantity']:.2f}\n")
+        file.write("-" * 50 + "\n")
+        file.write(f"Grand Total: ${grand_total:.2f}\n")
+    print("Receipt saved as 'QuickBite_Receipt.txt'.")
+
+
+# Main function to run the food ordering system
+def run_food_ordering_system():
+    """Main control function to operate the QuickBite Food Ordering System."""
+    while True:
+        print("\n--- QuickBite Food Ordering System ---")
+        print("1. View Menu")
+        print("2. Place Order")
+        print("3. View Order Summary")
+        print("4. Remove Item from Order")
+        print("5. Edit Item Quantity in Order")
+        print("6. Clear Order")
+        print("7. Search Menu by Keyword")
+        print("8. Calculate Total with Tax")
+        print("9. Generate Receipt")
+        print("10. Exit")
+        print("-" * 30)
+
+        choice = input("Enter your choice (1-10): ").strip()
+
+        if choice == '1':
+            display_menu()
+        elif choice == '2':
+            add_to_order()
+        elif choice == '3':
+            view_order_summary()
+        elif choice == '4':
+            remove_from_order()
+        elif choice == '5':
+            edit_order_quantity()
+        elif choice == '6':
+            clear_order()
+        elif choice == '7':
+            search_menu()
+        elif choice == '8':
+            if order:
+                calculate_total()
+            else:
+                print("No items in your order. Please place an order first.")
+        elif choice == '9':
+            if order:
+                generate_receipt()
+            else:
+                print("No items in your order. Please place an order first.")
+        elif choice == '10':
+            print("Exiting the system. Have a great day!")
+            break
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+# Run the system
+run_food_ordering_system()
